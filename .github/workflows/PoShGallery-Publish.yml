@@ -1,0 +1,33 @@
+name: Publish to PowerShell Gallery
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Validate module manifest
+        shell: pwsh
+        run: |
+          $psd1Path = Join-Path $PWD 'Nebula.Tools.psd1'
+          Test-ModuleManifest -Path $psd1Path -Verbose
+
+      - name: Publish module to PowerShell Gallery
+        shell: pwsh
+        run: |
+          $modulePath = "$PWD"
+
+          if (-not (Get-PSRepository -Name 'PSGallery' -ErrorAction SilentlyContinue)) {
+              Register-PSRepository -Name 'PSGallery' -SourceLocation 'https://www.powershellgallery.com/api/v2' -InstallationPolicy Trusted
+          }
+
+          Publish-Module -Path $modulePath `
+                         -NuGetApiKey "${{ secrets.NUGET_API_KEY }}" `
+                         -Verbose
