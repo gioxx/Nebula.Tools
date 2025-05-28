@@ -6,7 +6,7 @@ on:
       - 'v*'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   publish:
@@ -22,34 +22,26 @@ jobs:
           $psd1Path = Join-Path $PWD 'Nebula.Tools.psd1'
           Test-ModuleManifest -Path $psd1Path -Verbose
 
-      - name: Prepare module package
+      - name: Prepare clean module package
         shell: pwsh
         run: |
-          $outDir = Join-Path $PWD 'build'
-          $moduleName = 'Nebula.Tools'
-          $moduleDir = Join-Path $outDir $moduleName
-
+          $outDir = "$PWD\build"
           if (Test-Path $outDir) { Remove-Item -Recurse -Force $outDir }
-          New-Item -ItemType Directory -Path $moduleDir -Force | Out-Null
+          New-Item -ItemType Directory -Path $outDir | Out-Null
 
           # Copy main files
-          $includeFiles = @("$moduleName.psd1", "$moduleName.psm1", "README.md", "icon.png")
-          foreach ($file in $includeFiles) {
-            if (Test-Path $file) {
-              Copy-Item -Path $file -Destination $moduleDir -Force
-            }
-          }
+          Get-ChildItem -Path $PWD -Include *.psd1,*.psm1,README.md,icon.png -File |
+              Copy-Item -Destination $outDir
 
           # Copy modules folder if it exists
-          $sourceModules = Join-Path $PWD 'modules'
-          if (Test-Path $sourceModules) {
-            Copy-Item -Path $sourceModules -Destination (Join-Path $moduleDir 'modules') -Recurse -Force
+          if (Test-Path "$PWD\modules") {
+              Copy-Item -Path "$PWD\modules" -Destination "$outDir\modules" -Recurse
           }
 
       - name: Publish module to PowerShell Gallery
         shell: pwsh
         run: |
-          $modulePath = Join-Path $PWD 'build' | Join-Path -ChildPath 'Nebula.Tools'
+          $modulePath = "$PWD\build"
 
           if (-not (Get-PSRepository -Name 'PSGallery' -ErrorAction SilentlyContinue)) {
               Register-PSRepository -Name 'PSGallery' -SourceLocation 'https://www.powershellgallery.com/api/v2' -InstallationPolicy Trusted
