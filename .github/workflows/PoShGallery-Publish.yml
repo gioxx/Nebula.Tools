@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Validate module manifest
         shell: pwsh
@@ -19,10 +19,26 @@ jobs:
           $psd1Path = Join-Path $PWD 'Nebula.Tools.psd1'
           Test-ModuleManifest -Path $psd1Path -Verbose
 
+      - name: Prepare clean module package
+        shell: pwsh
+        run: |
+          $outDir = "$PWD\build"
+          if (Test-Path $outDir) { Remove-Item -Recurse -Force $outDir }
+          New-Item -ItemType Directory -Path $outDir | Out-Null
+
+          # Copy main files
+          Get-ChildItem -Path $PWD -Include *.psd1,*.psm1,README.md,icon.png -File |
+              Copy-Item -Destination $outDir
+
+          # Copy modules folder if it exists
+          if (Test-Path "$PWD\modules") {
+              Copy-Item -Path "$PWD\modules" -Destination "$outDir\modules" -Recurse
+          }
+
       - name: Publish module to PowerShell Gallery
         shell: pwsh
         run: |
-          $modulePath = "$PWD"
+          $modulePath = "$PWD\build"
 
           if (-not (Get-PSRepository -Name 'PSGallery' -ErrorAction SilentlyContinue)) {
               Register-PSRepository -Name 'PSGallery' -SourceLocation 'https://www.powershellgallery.com/api/v2' -InstallationPolicy Trusted
