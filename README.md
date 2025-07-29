@@ -6,9 +6,7 @@
 ![Downloads](https://img.shields.io/powershellgallery/dt/Nebula.Tools?color=blue)
 
 > [!NOTE]  
-> I want this module to remain specifically designed and developed to be an integral part of other scripts and automations that have little to do instead with everyday use tools. Nebula.Tools will return in another form, with different functions related to everyday use via PowerShell.  
-> I apologize if this is confusing, I realize I could have thought of this long before!  
-> The old GUID was invalidated and I removed the old versions from the GitHub releases. It's starting from scratch. I recommend you do the same with any installations on your machine!
+> If you're looking for automations for linking to Microsoft Graph or sending e-mail, I suggest you take a look at **Nebula.Automations** (https://github.com/gioxx/Nebula.Automations).
 
 ---
 
