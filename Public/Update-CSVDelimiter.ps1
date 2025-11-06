@@ -19,6 +19,7 @@ function Update-CSVDelimiter {
         Author: Giovanni Solone
     
         Modification History:
+        - 2025-11-06: Aesthetic improvements to output messages.
         - 2025-07-29: Initial version.
     #>
     [CmdletBinding()]
@@ -43,12 +44,12 @@ function Update-CSVDelimiter {
             }
             
             $newContent | Out-File -FilePath $FilePath -Encoding $Encoding -Force
-            Write-Output "Conversion successfully completed."
+            Write-Host "Conversion successfully completed." -ForegroundColor "Green"
 
         } catch {
-            Write-Output "An error occurred: $_"
+            Write-Host "An error occurred: $_" -ForegroundColor "Red"
         }
     } else {
-        Write-Output "The specified file does not exist."
+        Write-Host "The specified file does not exist." -ForegroundColor "Yellow"
     }
 }

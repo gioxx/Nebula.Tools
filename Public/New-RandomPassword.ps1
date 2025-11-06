@@ -17,19 +17,19 @@ function New-RandomPassword {
     .PARAMETER Clipboard
         A switch to copy the generated password(s) to the clipboard.
     .EXAMPLE
-        New-RandomPassword -PasswordLength 12
+        New-RandomPassword -PasswordLength 15
         Generates one complex password of length 12.
     .EXAMPLE
-        New-RandomPassword -PasswordLength 12 -Simple
+        New-RandomPassword -PasswordLength 15 -Simple
         Generates one simplified password of length 12.
     .EXAMPLE
-        New-RandomPassword -PasswordLength 12 -Count 5
+        New-RandomPassword -PasswordLength 15 -Count 5
         Generates five complex passwords of length 12.
     .EXAMPLE
-        New-RandomPassword -PasswordLength 12 -Simple -Count 3
+        New-RandomPassword -PasswordLength 15 -Simple -Count 3
         Generates three simplified passwords of length 12.
     .EXAMPLE
-        New-RandomPassword -PasswordLength 12 -Count 5 -Clipboard
+        New-RandomPassword -PasswordLength 15 -Count 5 -Clipboard
         Generates five complex passwords of lenght 12 and copy to clipboard
     .NOTES
         Author: Giovanni Solone
@@ -39,14 +39,17 @@ function New-RandomPassword {
         
         Modification History:
         - 2025-11-06: Added -Clipboard switch to copy generated passwords to clipboard.
-                      Renamed function from Get-RandomPassword to New-RandomPassword for consistency with PowerShell naming conventions.
+            Renamed function from Get-RandomPassword to New-RandomPassword for consistency with PowerShell naming conventions.
+            Aesthetic improvements to output messages.
+            Removed comma from allowed special characters in simple mode to avoid potential issues in certain contexts (CSV).
+            New default password length set to 12 for better security.
         - 2025-07-29: Initial version.
     #>
     [CmdletBinding()]
     param(
         [Parameter(ValueFromPipeline = $false)]
         [ValidateRange(1, 256)]
-        [int]$PasswordLength = 10,
+        [int]$PasswordLength = 12,
         [Parameter()]
         [ValidateRange(1, 999)]
         [int]$Count = 1,
@@ -58,7 +61,7 @@ function New-RandomPassword {
 
     # Define allowed special characters
     if ($Simple) {
-        $AllowedSpecialChars = [char[]]'!,.@#$_-'
+        $AllowedSpecialChars = [char[]]'!.@#$_-'
     } else {
         $AllowedSpecialChars = [char[]](33..47 + 58..64 + 91..96 + 123..126)
     }
@@ -86,7 +89,7 @@ function New-RandomPassword {
     if ($Clipboard) {
         $PasswordsString = $Passwords -join "`r`n"
         $PasswordsString | Set-Clipboard
-        Write-Output "Password(s) copied to clipboard."
+        Write-Host "Password(s) copied to clipboard." -ForegroundColor "Yellow"
     }
 
     return $Passwords
