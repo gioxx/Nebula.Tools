@@ -24,3 +24,9 @@ if (Test-Path $publicDir) {
         }
     }
 }
+
+# --- Aliases & Exports -------------------------------------------------------
+$existing = Get-Alias -Name 'Get-RandomPassword' -ErrorAction SilentlyContinue
+if (-not $existing -or $existing.ResolvedCommandName -ne 'New-RandomPassword') {
+    Set-Alias -Name Get-RandomPassword -Value New-RandomPassword -Force
+}

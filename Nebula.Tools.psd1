@@ -10,12 +10,12 @@
     CompatiblePSEditions = @('Desktop', 'Core')
     RequiredAssemblies   = @()
     FunctionsToExport    = @(
-        'Get-RandomPassword',
+        'New-RandomPassword',
         'Update-CSVDelimiter'
     )
     CmdletsToExport      = @()
     VariablesToExport    = @()
-    AliasesToExport      = @()
+    AliasesToExport      = @('Get-RandomPassword')
 
     PrivateData          = @{
         PSData = @{
@@ -27,6 +27,7 @@
 - Improved: Now compatible with PowerShell 5.1 and later.
 - Improved: Refactored module structure for better maintainability.
 - Improved: Added -Clipboard parameter to Get-RandomPassword function.
+- Changed: Function name from Get-RandomPassword to New-RandomPassword for consistency with PowerShell naming conventions. Maintained backward compatibility via alias.
 '@
         }
     }

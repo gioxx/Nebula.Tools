@@ -1,4 +1,4 @@
-function Get-RandomPassword {
+function New-RandomPassword {
     <#
     .SYNOPSIS
         Generates a random password with specified length and complexity.
@@ -17,19 +17,19 @@ function Get-RandomPassword {
     .PARAMETER Clipboard
         A switch to copy the generated password(s) to the clipboard.
     .EXAMPLE
-        Get-RandomPassword -PasswordLength 12
+        New-RandomPassword -PasswordLength 12
         Generates one complex password of length 12.
     .EXAMPLE
-        Get-RandomPassword -PasswordLength 12 -Simple
+        New-RandomPassword -PasswordLength 12 -Simple
         Generates one simplified password of length 12.
     .EXAMPLE
-        Get-RandomPassword -PasswordLength 12 -Count 5
+        New-RandomPassword -PasswordLength 12 -Count 5
         Generates five complex passwords of length 12.
     .EXAMPLE
-        Get-RandomPassword -PasswordLength 12 -Simple -Count 3
+        New-RandomPassword -PasswordLength 12 -Simple -Count 3
         Generates three simplified passwords of length 12.
     .EXAMPLE
-        Get-RandomPassword -PasswordLength 12 -Count 5 -Clipboard
+        New-RandomPassword -PasswordLength 12 -Count 5 -Clipboard
         Generates five complex passwords of lenght 12 and copy to clipboard
     .NOTES
         Author: Giovanni Solone
@@ -39,6 +39,7 @@ function Get-RandomPassword {
         
         Modification History:
         - 2025-11-06: Added -Clipboard switch to copy generated passwords to clipboard.
+                      Renamed function from Get-RandomPassword to New-RandomPassword for consistency with PowerShell naming conventions.
         - 2025-07-29: Initial version.
     #>
     [CmdletBinding()]
