@@ -1,3 +1,5 @@
+# Nebula.Tools: Security ============================================================================================================================
+
 function New-RandomPassword {
     <#
     .SYNOPSIS
@@ -38,6 +40,7 @@ function New-RandomPassword {
         https://www.sharepointdiary.com/2020/04/powershell-generate-random-password.html
         
         Modification History:
+        - 2025-12-11: Moved to Write-Information instead of Write-Host.
         - 2025-11-06: Added -Clipboard switch to copy generated passwords to clipboard.
             Renamed function from Get-RandomPassword to New-RandomPassword for consistency with PowerShell naming conventions.
             Aesthetic improvements to output messages.
@@ -89,7 +92,7 @@ function New-RandomPassword {
     if ($Clipboard) {
         $PasswordsString = $Passwords -join "`r`n"
         $PasswordsString | Set-Clipboard
-        Write-Host "Password(s) copied to clipboard." -ForegroundColor "Yellow"
+        Write-Information "Password(s) copied to clipboard." -InformationAction Continue
     }
 
     return $Passwords

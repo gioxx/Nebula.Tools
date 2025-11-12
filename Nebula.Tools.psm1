@@ -1,6 +1,10 @@
 # Nebula.Tools.psm1
 $script:ModuleRoot = $PSScriptRoot
 
+function Update-PS7 {
+    Invoke-Expression "& { $(Invoke-RestMethod https://aka.ms/install-powershell.ps1) } -UseMSI"
+}
+
 # --- Load Private helpers first (NOT exported) ---
 # $privateDir = Join-Path $PSScriptRoot 'Private'
 # if (Test-Path $privateDir) {

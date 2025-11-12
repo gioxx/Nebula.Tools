@@ -10,8 +10,12 @@
     CompatiblePSEditions = @('Desktop', 'Core')
     RequiredAssemblies   = @()
     FunctionsToExport    = @(
+        'Find-ModulesUpdates',
         'New-RandomPassword',
-        'Update-CSVDelimiter'
+        'Remove-OldModuleVersions',
+        'Update-CSVDelimiter',
+        'Update-Modules',
+        'Update-PS7'
     )
     CmdletsToExport      = @()
     VariablesToExport    = @()
@@ -24,10 +28,12 @@
             LicenseUri   = 'https://opensource.org/licenses/MIT'
             IconUri      = 'https://raw.githubusercontent.com/gioxx/Nebula.Tools/main/icon.png'
             ReleaseNotes = @'
+- Added: migrated PowerShell 7 MSI update function from ToyBox.
+- Added: migrated all modules maintenance functions from ToyBox.
+- Changed: Function name from Get-RandomPassword to New-RandomPassword for consistency with PowerShell naming conventions. Maintained backward compatibility via alias.
 - Improved: Now compatible with PowerShell 5.1 and later.
 - Improved: Refactored module structure for better maintainability.
 - Improved: Added -Clipboard parameter to Get-RandomPassword function.
-- Changed: Function name from Get-RandomPassword to New-RandomPassword for consistency with PowerShell naming conventions. Maintained backward compatibility via alias.
 '@
         }
     }

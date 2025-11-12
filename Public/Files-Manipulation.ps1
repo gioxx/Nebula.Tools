@@ -1,3 +1,5 @@
+# Nebula.Tools: Files manipulation ==================================================================================================================
+
 function Update-CSVDelimiter {
     <#
     .SYNOPSIS
@@ -19,6 +21,7 @@ function Update-CSVDelimiter {
         Author: Giovanni Solone
     
         Modification History:
+        - 2025-11-12: Moved to Write-Information instead of Write-Host.
         - 2025-11-06: Aesthetic improvements to output messages.
         - 2025-07-29: Initial version.
     #>
@@ -44,12 +47,12 @@ function Update-CSVDelimiter {
             }
             
             $newContent | Out-File -FilePath $FilePath -Encoding $Encoding -Force
-            Write-Host "Conversion successfully completed." -ForegroundColor "Green"
+            Write-Information "Conversion successfully completed." -InformationAction Continue
 
         } catch {
-            Write-Host "An error occurred: $_" -ForegroundColor "Red"
+            Write-Error "An error occurred: $_"
         }
     } else {
-        Write-Host "The specified file does not exist." -ForegroundColor "Yellow"
+        Write-Information "The specified file does not exist." -InformationAction Continue
     }
 }
