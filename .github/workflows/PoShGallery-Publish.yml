@@ -20,22 +20,49 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Pester (v5.x)
-        shell: ${{ matrix.shell }}
+      # --- Install Pester ---
+      - name: Install Pester (pwsh)
+        if: matrix.shell == 'pwsh'
+        shell: pwsh
         run: |
           $v = (Get-Module -ListAvailable Pester | Sort-Object Version -Descending | Select-Object -First 1).Version
           if (-not $v -or $v.Major -lt 5) {
-            # install for CurrentUser to avoid admin prompts on Windows PowerShell
             Install-Module Pester -Scope CurrentUser -Force -MinimumVersion 5.5.0
           }
           Import-Module Pester -PassThru | Format-List Name,Version
 
-      - name: Run tests with Pester
-        shell: ${{ matrix.shell }}
+      - name: Install Pester (WindowsPowerShell 5.1)
+        if: matrix.shell == 'powershell'
+        shell: powershell
         run: |
-          $results = Join-Path $PWD "TestResults-${{ matrix.shell }}.xml"
-          $coverage = Join-Path $PWD "Coverage-${{ matrix.shell }}.xml"
-          # Esegui i test nella cartella 'tests'; genera report NUnit per CI e coverage sui file Public
+          $v = (Get-Module -ListAvailable Pester | Sort-Object Version -Descending | Select-Object -First 1).Version
+          if (-not $v -or $v.Major -lt 5) {
+            Install-Module Pester -Scope CurrentUser -Force -MinimumVersion 5.5.0
+          }
+          Import-Module Pester -PassThru | Format-List Name,Version
+
+      # --- Run tests ---
+      - name: Run tests with Pester (pwsh)
+        if: matrix.shell == 'pwsh'
+        shell: pwsh
+        run: |
+          $results = Join-Path $PWD "TestResults-pwsh.xml"
+          $coverage = Join-Path $PWD "Coverage-pwsh.xml"
+          Invoke-Pester `
+            -Path 'tests' `
+            -CI `
+            -Output 'Detailed' `
+            -OutputFormat NUnitXml `
+            -OutputPath $results `
+            -CodeCoverage 'Public\*.ps1' `
+            -CodeCoverageOutputFile $coverage
+
+      - name: Run tests with Pester (WindowsPowerShell 5.1)
+        if: matrix.shell == 'powershell'
+        shell: powershell
+        run: |
+          $results = Join-Path $PWD "TestResults-powershell.xml"
+          $coverage = Join-Path $PWD "Coverage-powershell.xml"
           Invoke-Pester `
             -Path 'tests' `
             -CI `
