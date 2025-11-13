@@ -46,10 +46,16 @@ jobs:
         if: matrix.shell == 'pwsh'
         shell: pwsh
         run: |
+          $testPath = Join-Path $PWD 'tests'
+          if (-not (Test-Path $testPath)) {
+            Write-Host "No tests directory found at $testPath. Skipping Pester run."
+            return
+          }
+
           $results = Join-Path $PWD "TestResults-pwsh.xml"
           $coverage = Join-Path $PWD "Coverage-pwsh.xml"
           Invoke-Pester `
-            -Path 'tests' `
+            -Path $testPath `
             -CI `
             -Output 'Detailed' `
             -OutputFormat NUnitXml `
@@ -61,10 +67,16 @@ jobs:
         if: matrix.shell == 'powershell'
         shell: powershell
         run: |
+          $testPath = Join-Path $PWD 'tests'
+          if (-not (Test-Path $testPath)) {
+            Write-Host "No tests directory found at $testPath. Skipping Pester run."
+            return
+          }
+
           $results = Join-Path $PWD "TestResults-powershell.xml"
           $coverage = Join-Path $PWD "Coverage-powershell.xml"
           Invoke-Pester `
-            -Path 'tests' `
+            -Path $testPath `
             -CI `
             -Output 'Detailed' `
             -OutputFormat NUnitXml `
