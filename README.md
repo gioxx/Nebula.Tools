@@ -19,7 +19,7 @@
 
 ---
 
-## Included Functions
+## Included Functions ✨
 
 | Function | Category | Description |
 | --- | --- | --- |
@@ -32,7 +32,7 @@
 
 ---
 
-## Installation
+## Installation 📦
 
 Nebula.Tools targets Windows PowerShell 5.1 and PowerShell 7+. Install (or update) it from the PowerShell Gallery:
 
@@ -49,7 +49,7 @@ Install-PSResource -Name Nebula.Tools -Scope CurrentUser
 
 ---
 
-## Usage
+## Usage 🚀
 
 ### Generate secure passwords
 
@@ -113,18 +113,18 @@ This downloads and runs the official `aka.ms/install-powershell.ps1` helper with
 
 ---
 
-## License
+## License 📄
 
 All scripts in this repository are licensed under the [MIT License](https://opensource.org/licenses/MIT).
 
 ---
 
-## Development
+## Development 🔧
 
 Nebula.Tools is part of the broader [Nebula](https://github.com/gioxx?tab=repositories&q=Nebula) PowerShell family. Feel free to fork the repository, file issues, or send pull requests.
 
 ---
 
-## Feedback and Contributions
+## Feedback and Contributions 📬
 
 Issues, feature requests, and contributions are always welcome. Open an issue at https://github.com/gioxx/Nebula.Tools/issues or start a discussion with a pull request.
