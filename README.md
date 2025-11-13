@@ -14,7 +14,7 @@
 
 | Function Name            | Description |
 |------------------------|------------------------------------------------------------------|
-| `Get-RandomPassword`  | Generates a random password with specified length and complexity. |
+| `New-RandomPassword`  | Generates a random password with specified length and complexity. |
 | `Update-CSVDelimiter`  | Update the delimiter of a CSV file between comma and semicolon. |
 
 More functions will be added over time.
@@ -36,10 +36,11 @@ Install-Module -Name Nebula.Tools -Scope CurrentUser
 Example to generate passwords:
 
 ```powershell
-Get-RandomPassword -PasswordLength 12
-Get-RandomPassword -PasswordLength 12 -Simple
-Get-RandomPassword -PasswordLength 12 -Count 5
-Get-RandomPassword -PasswordLength 12 -Simple -Count 3
+New-RandomPassword -PasswordLength 12
+New-RandomPassword -PasswordLength 12 -Simple
+New-RandomPassword -PasswordLength 12 -Count 5
+New-RandomPassword -PasswordLength 12 -Simple -Count 3
+New-RandomPassword -PasswordLength 12 -Simple -Count 3 -Clipboard
 ```
 
 Example to change delimiter in a CSV file:
