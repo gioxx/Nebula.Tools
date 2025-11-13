@@ -28,7 +28,7 @@ function Update-CSVDelimiter {
     [CmdletBinding()]
     param (
         [string]$FilePath,
-        [string]$Encoding = "ISO-8859-1",   # Default encoding, can be changed
+        [string]$Encoding = "ISO-8859-15",  # Default encoding, can be changed
         [switch]$ToComma,                   # Switch to convert ";" to ","
         [switch]$ToSemicolon                # Switch to convert "," to ";"
     )
@@ -53,6 +53,6 @@ function Update-CSVDelimiter {
             Write-Error "An error occurred: $_"
         }
     } else {
-        Write-Information "The specified file does not exist." -InformationAction Continue
+        Write-Error "The specified file does not exist." -InformationAction Continue
     }
 }

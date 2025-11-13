@@ -108,12 +108,12 @@ function Remove-OldModuleVersions {
         Remove older versions of a module, using PSResourceGet first, then PowerShellGet v2, then unmanaged folder delete.
     .DESCRIPTION
         Given a module name, this command:
-          1) Enumerates all available versions on disk (Get-Module -ListAvailable).
-          2) Determines which versions are tracked by PSResourceGet (v3) and/or PowerShellGet v2.
-          3) Keeps the N most recent versions (default 1) and removes the rest.
-             - Uses Uninstall-PSResource when the version is known to PSResourceGet.
-             - Else uses Uninstall-Module when known to PowerShellGet v2.
-             - Else removes the module folder (unmanaged copy) as a last resort.
+          Enumerates all available versions on disk (Get-Module -ListAvailable).
+          Determines which versions are tracked by PSResourceGet (v3) and/or PowerShellGet v2.
+          Keeps the N most recent versions (default 1) and removes the rest.
+           - Uses Uninstall-PSResource when the version is known to PSResourceGet.
+           - Else uses Uninstall-Module when known to PowerShellGet v2.
+           - Else removes the module folder (unmanaged copy) as a last resort.
         Supports -WhatIf/-Confirm via ShouldProcess.
     .PARAMETER Name
         Target module name (e.g., 'PSAppDeployToolkit').
@@ -149,7 +149,7 @@ function Remove-OldModuleVersions {
     }
 
     # Gather all available versions (on disk)
-    $available = Get-Module -ListAvailable -Name $Name | Sort-Object Version -Unique
+    $available = Get-Module -ListAvailable -Name $Name | Sort-Object Version
     if (-not $available) {
         Write-Warning "No modules named '$Name' were found on this machine."
         return
@@ -275,7 +275,7 @@ function Remove-OldModuleVersions {
     Write-Information "`nGet-InstalledModule:" -InformationAction Continue
     if ($v2After) { $v2After | Format-Table Name, Version, InstalledLocation -AutoSize } else { Write-Information "(none)" -InformationAction Continue }
 
-    $diskAfter = Get-Module -ListAvailable -Name $Name | Sort-Object Version -Unique
+    $diskAfter = Get-Module -ListAvailable -Name $Name | Sort-Object Version
     Write-Information "`nGet-Module -ListAvailable:" -InformationAction Continue
     if ($diskAfter) { $diskAfter | Format-Table Name, Version, ModuleBase -AutoSize } else { Write-Information "(none)" -InformationAction Continue }
 }
@@ -387,10 +387,10 @@ function Update-Modules {
                             Name             = $mod.Name
                             InstalledVersion = [version]$mod.Version
                             LatestVersion    = [version]$latest.Version
-                            # Repo             = $latest.Repository
+                            Repo             = $latest.Repository
                             Scope            = $scope
                             TargetScope      = Get-TargetScopeString $scope
-                            # Provider         = 'PSResourceGet'
+                            Provider         = 'PSResourceGet'
                         }
                     }
                 }
@@ -406,10 +406,10 @@ function Update-Modules {
                             Name             = $mod.Name
                             InstalledVersion = [version]$mod.Version
                             LatestVersion    = [version]$latest.Version
-                            # Repo             = $latest.Repository
+                            Repo             = $latest.Repository
                             Scope            = $scope
                             TargetScope      = Get-TargetScopeString $scope
-                            # Provider         = 'PowerShellGet'
+                            Provider         = 'PowerShellGet'
                         }
                     }
                 }
