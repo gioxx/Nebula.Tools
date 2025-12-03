@@ -3,7 +3,7 @@
     ModuleVersion        = '1.0.3'
     GUID                 = 'd6f6c63d-e8db-4f0c-b7f6-4b0a95f7a63e'
     Author               = 'Giovanni Solone'
-    Description          = 'Functions and utilities for PowerShell.'
+    Description          = 'Everyday functions and utilities for PowerShell.'
 
     # Minimum required PowerShell (PS 5.1 works; better with PS 7+)
     PowerShellVersion    = '5.1'

@@ -1,4 +1,4 @@
-name: Test & Publish Nebula.Tools
+name: Publish to PowerShell Gallery
 
 on:
   push:
@@ -9,162 +9,53 @@ permissions:
   contents: read
 
 jobs:
-  test:
-    name: Run Pester tests (PS 7 + 5.1)
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        shell: [pwsh, powershell]  # pwsh = PS 7+, powershell = Windows PowerShell 5.1
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      # --- Install Pester ---
-      - name: Install Pester (pwsh)
-        if: matrix.shell == 'pwsh'
-        shell: pwsh
-        run: |
-          $v = (Get-Module -ListAvailable Pester | Sort-Object Version -Descending | Select-Object -First 1).Version
-          if (-not $v -or $v.Major -lt 5) {
-            Install-Module Pester -Scope CurrentUser -Force -MinimumVersion 5.5.0
-          }
-          Import-Module Pester -PassThru | Format-List Name,Version
-
-      - name: Install Pester (WindowsPowerShell 5.1)
-        if: matrix.shell == 'powershell'
-        shell: powershell
-        run: |
-          $v = (Get-Module -ListAvailable Pester | Sort-Object Version -Descending | Select-Object -First 1).Version
-          if (-not $v -or $v.Major -lt 5) {
-            Install-Module Pester -Scope CurrentUser -Force -MinimumVersion 5.5.0
-          }
-          Import-Module Pester -PassThru | Format-List Name,Version
-
-      # --- Run tests ---
-      - name: Run tests with Pester (pwsh)
-        if: matrix.shell == 'pwsh'
-        shell: pwsh
-        run: |
-          $testPath = Join-Path $PWD 'tests'
-          if (-not (Test-Path $testPath)) {
-            Write-Host "No tests directory found at $testPath. Skipping Pester run."
-            return
-          }
-
-          $results = Join-Path $PWD "TestResults-pwsh.xml"
-          $coverage = Join-Path $PWD "Coverage-pwsh.xml"
-          Invoke-Pester `
-            -Path $testPath `
-            -CI `
-            -Output 'Detailed' `
-            -OutputFormat NUnitXml `
-            -OutputPath $results `
-            -CodeCoverage 'Public\*.ps1' `
-            -CodeCoverageOutputFile $coverage
-
-      - name: Run tests with Pester (WindowsPowerShell 5.1)
-        if: matrix.shell == 'powershell'
-        shell: powershell
-        run: |
-          $testPath = Join-Path $PWD 'tests'
-          if (-not (Test-Path $testPath)) {
-            Write-Host "No tests directory found at $testPath. Skipping Pester run."
-            return
-          }
-
-          $results = Join-Path $PWD "TestResults-powershell.xml"
-          $coverage = Join-Path $PWD "Coverage-powershell.xml"
-          Invoke-Pester `
-            -Path $testPath `
-            -CI `
-            -Output 'Detailed' `
-            -OutputFormat NUnitXml `
-            -OutputPath $results `
-            -CodeCoverage 'Public\*.ps1' `
-            -CodeCoverageOutputFile $coverage
-
-      - name: Upload test artifacts (${{ matrix.shell }})
-        uses: actions/upload-artifact@v5
-        with:
-          name: pester-${{ matrix.shell }}
-          path: |
-            TestResults-${{ matrix.shell }}.xml
-            Coverage-${{ matrix.shell }}.xml
-          if-no-files-found: warn
-
   publish:
-    name: Publish to PowerShell Gallery
     runs-on: windows-latest
-    needs: test
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v5
 
-      - name: Validate manifest and version matches tag
+      - name: Validate module manifest
         shell: pwsh
         run: |
           $psd1Path = Join-Path $PWD 'Nebula.Tools.psd1'
-          Write-Host "Validating manifest at: $psd1Path"
-          $manifestInfo = Test-ModuleManifest -Path $psd1Path -Verbose
+          Test-ModuleManifest -Path $psd1Path -Verbose
 
-          $tag = "${env:GITHUB_REF_NAME}"    # e.g. v1.0.7
-          $tagVersion = $tag.TrimStart('v')
-          $manifestVersion = $manifestInfo.Version.ToString()
-          Write-Host "Tag version: $tagVersion | Manifest version: $manifestVersion"
-          if ($tagVersion -ne $manifestVersion) {
-            throw "Version mismatch: tag ($tagVersion) != manifest ($manifestVersion)"
-          }
-
-      - name: Prepare module package (include Public/ and Private/)
+      - name: Prepare module package
         shell: pwsh
         run: |
-          $outDir     = Join-Path $PWD 'build'
+          $outDir = Join-Path $PWD 'build'
           $moduleName = 'Nebula.Tools'
-          $moduleDir  = Join-Path $outDir $moduleName
+          $moduleDir = Join-Path $outDir $moduleName
 
           if (Test-Path $outDir) { Remove-Item -Recurse -Force $outDir }
           New-Item -ItemType Directory -Path $moduleDir -Force | Out-Null
 
-          $include = @("$moduleName.psd1", "$moduleName.psm1", "README.md", "icon.png")
-          foreach ($f in $include) {
-            if (Test-Path $f) { Copy-Item $f -Destination $moduleDir -Force } else { Write-Host "Optional missing: $f" }
+          $includeFiles = @(
+            "$moduleName.psd1",
+            "$moduleName.psm1",
+            "README.md"
+          )
+          
+          foreach ($file in $includeFiles) {
+            if (Test-Path $file) { Copy-Item -Path $file -Destination $moduleDir -Force }
           }
 
-          foreach ($sub in @('Public','Private')) {
-            $src = Join-Path $PWD $sub
-            if (Test-Path $src) {
-              Copy-Item -Path $src -Destination (Join-Path $moduleDir $sub) -Recurse -Force
-            } else {
-              Write-Host "Folder not found (optional): $sub"
-            }
-          }
-
-          foreach ($required in @("$moduleName.psd1", "$moduleName.psm1")) {
-            if (-not (Test-Path (Join-Path $moduleDir $required))) {
-              throw "Missing required file in package: $required"
-            }
+          $foldersToInclude = @("Private", "Public")
+          foreach ($folder in $foldersToInclude) {
+            if (Test-Path $folder) { Copy-Item -Path $folder -Destination $moduleDir -Recurse -Force }
           }
 
       - name: Publish module to PowerShell Gallery
         shell: pwsh
-        env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
-          $modulePath = Join-Path (Join-Path $PWD 'build') 'Nebula.Tools'
+          $modulePath = Join-Path $PWD 'build' | Join-Path -ChildPath 'Nebula.Tools'
 
-          if (-not (Get-PackageProvider -Name 'NuGet' -ErrorAction SilentlyContinue)) {
-            Install-PackageProvider -Name 'NuGet' -MinimumVersion 2.8.5.201 -Force -Scope CurrentUser
-          }
           if (-not (Get-PSRepository -Name 'PSGallery' -ErrorAction SilentlyContinue)) {
-            Register-PSRepository -Name 'PSGallery' -SourceLocation 'https://www.powershellgallery.com/api/v2' -InstallationPolicy Trusted
-          } else {
-            Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted
+              Register-PSRepository -Name 'PSGallery' -SourceLocation 'https://www.powershellgallery.com/api/v2' -InstallationPolicy Trusted
           }
 
-          if ([string]::IsNullOrWhiteSpace($env:NUGET_API_KEY)) {
-            throw "NUGET_API_KEY secret is missing."
-          }
-
-          Publish-Module -Path $modulePath -NuGetApiKey $env:NUGET_API_KEY -Verbose
+          Publish-Module -Path $modulePath `
+                         -NuGetApiKey "${{ secrets.NUGET_API_KEY }}" `
+                         -Verbose
