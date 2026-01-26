@@ -1,6 +1,6 @@
 @{
     RootModule           = 'Nebula.Tools.psm1'
-    ModuleVersion        = '1.0.3'
+    ModuleVersion        = '1.0.4'
     GUID                 = 'd6f6c63d-e8db-4f0c-b7f6-4b0a95f7a63e'
     Author               = 'Giovanni Solone'
     Description          = 'Everyday functions and utilities for PowerShell.'
@@ -10,6 +10,7 @@
     CompatiblePSEditions = @('Desktop', 'Core')
     RequiredAssemblies   = @()
     FunctionsToExport    = @(
+        'Find-ADAccountExpirations',
         'Find-ModulesUpdates',
         'New-RandomPassword',
         'Remove-OldModuleVersions',
@@ -28,12 +29,8 @@
             LicenseUri   = 'https://opensource.org/licenses/MIT'
             IconUri      = 'https://raw.githubusercontent.com/gioxx/Nebula.Tools/main/icon.png'
             ReleaseNotes = @'
-- Added: migrated PowerShell 7 MSI update function from ToyBox.
-- Added: migrated all modules maintenance functions from ToyBox.
-- Changed: Function name from Get-RandomPassword to New-RandomPassword for consistency with PowerShell naming conventions. Maintained backward compatibility via alias.
-- Improved: Now compatible with PowerShell 5.1 and later.
-- Improved: Refactored module structure for better maintainability.
-- Improved: Added -Clipboard parameter to Get-RandomPassword function.
+- Added: Find-ADAccountExpirations to audit and optionally extend AD account expirations.
+- Changed: Documentation structure aligned with Nebula.Core (Modules/Security/Utilities/Active Directory).
 '@
         }
     }
