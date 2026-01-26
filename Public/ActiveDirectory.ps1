@@ -15,6 +15,9 @@ function Find-ADAccountExpirations {
     .PARAMETER FilterDomain
         Filter on the user's email (e.g., "@contoso.com"). The filter is treated as a wildcard
         and special characters are escaped.
+    .PARAMETER ExactDate
+        If present, match only accounts expiring exactly on TargetDate (same date). By default
+        TargetDate matches expirations on or before the date.
     .PARAMETER ExportCsv
         If present, exports results to a CSV file.
     .PARAMETER ExportPath
@@ -40,6 +43,7 @@ function Find-ADAccountExpirations {
         # Accept dates as strings to avoid PowerShell interpreting 2027-01-01 as arithmetic
         [string]$TargetDate,
         [string]$FilterDomain,
+        [switch]$ExactDate,
         [switch]$ExportCsv,
         [string]$ExportPath,
 
@@ -96,21 +100,31 @@ function Find-ADAccountExpirations {
         $emailPattern = '*' + [System.Management.Automation.WildcardPattern]::Escape($FilterDomain.Trim()) + '*'
     }
 
+    $adProperties = @('accountExpires', 'mail')
+    if ($ExportCsv) {
+        $adProperties += 'department', 'company'
+    }
+
     $adParams = @{
         Filter     = 'Enabled -eq $true'
-        Properties = 'accountExpires', 'mail', 'department', 'company'
+        Properties = $adProperties
     }
     if (-not [string]::IsNullOrWhiteSpace($TargetServer)) {
         $adParams['Server'] = $TargetServer
     }
 
-    $results = Get-ADUser @adParams |
+    $rawResults = Get-ADUser @adParams |
     Where-Object {
+        $expirationDate = ([DateTime]::FromFileTimeUtc($_.accountExpires)).Date
+
         $_.accountExpires -ne 0 -and
         $_.accountExpires -ne 9223372036854775807 -and
         (
             -not $hasTargetDate -or
-            ([DateTime]::FromFileTimeUtc($_.accountExpires)).Date -le $TargetDateDT.Date
+            (
+                ($ExactDate -and $expirationDate -eq $TargetDateDT.Date) -or
+                (-not $ExactDate -and $expirationDate -le $TargetDateDT.Date)
+            )
         ) -and
         (
             -not $emailPattern -or
@@ -124,9 +138,18 @@ function Find-ADAccountExpirations {
         Name,
         SamAccountName,
         DistinguishedName,
+        mail,
+        department,
+        company,
+        accountExpires
+
+    $rawResults = @($rawResults)
+
+    $results = $rawResults | Select-Object `
+        Name,
+        SamAccountName,
+        DistinguishedName,
         @{ n = 'Email'; e = { $_.mail } },
-        @{ n = 'Department'; e = { $_.department } },
-        @{ n = 'Company'; e = { $_.company } },
         @{ n = 'AccountExpirationUTC'; e = { [DateTime]::FromFileTimeUtc($_.accountExpires) } },
         @{ n = 'AccountExpirationLocal'; e = { [DateTime]::FromFileTime($_.accountExpires) } }
 
@@ -135,6 +158,7 @@ function Find-ADAccountExpirations {
     if ($hasTargetDate) {
         $results |
         Select-Object Name, SamAccountName, Email, AccountExpirationUTC |
+        Sort-Object AccountExpirationUTC |
         Format-Table -AutoSize
     }
     else {
@@ -154,7 +178,17 @@ function Find-ADAccountExpirations {
             Remove-Item -Path $csvPath -Force
         }
 
-        $results | Export-Csv -Path $csvPath -NoTypeInformation -Encoding UTF8
+        $exportResults = $rawResults | Select-Object `
+            Name,
+            SamAccountName,
+            DistinguishedName,
+            @{ n = 'Email'; e = { $_.mail } },
+            @{ n = 'Department'; e = { $_.department } },
+            @{ n = 'Company'; e = { $_.company } },
+            @{ n = 'AccountExpirationUTC'; e = { [DateTime]::FromFileTimeUtc($_.accountExpires) } },
+            @{ n = 'AccountExpirationLocal'; e = { [DateTime]::FromFileTime($_.accountExpires) } }
+
+        $exportResults | Export-Csv -Path $csvPath -NoTypeInformation -Encoding UTF8
         Write-Information "CSV exported to $csvPath" -InformationAction Continue
     }
 

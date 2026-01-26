@@ -91,8 +91,12 @@ function New-RandomPassword {
     # If Clipboard switch is active, copy all passwords to clipboard
     if ($Clipboard) {
         $PasswordsString = $Passwords -join "`r`n"
-        $PasswordsString | Set-Clipboard
-        Write-Information "Password(s) copied to clipboard." -InformationAction Continue
+        if (Get-Command -Name Set-Clipboard -ErrorAction SilentlyContinue) {
+            $PasswordsString | Set-Clipboard
+            Write-Information "Password(s) copied to clipboard." -InformationAction Continue
+        } else {
+            Write-Warning "Clipboard not available in this session. Returning passwords to output."
+        }
     }
 
     return $Passwords

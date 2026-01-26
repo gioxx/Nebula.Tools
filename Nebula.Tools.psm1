@@ -2,6 +2,13 @@
 $script:ModuleRoot = $PSScriptRoot
 
 function Update-PS7 {
+    # Ensure TLS 1.2 for Windows PowerShell 5.1 environments
+    try {
+        if ($PSVersionTable.PSEdition -eq 'Desktop') {
+            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        }
+    } catch {}
+
     Invoke-Expression "& { $(Invoke-RestMethod https://aka.ms/install-powershell.ps1) } -UseMSI"
 }
 

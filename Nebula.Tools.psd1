@@ -1,6 +1,6 @@
 @{
     RootModule           = 'Nebula.Tools.psm1'
-    ModuleVersion        = '1.0.4'
+    ModuleVersion        = '1.0.5'
     GUID                 = 'd6f6c63d-e8db-4f0c-b7f6-4b0a95f7a63e'
     Author               = 'Giovanni Solone'
     Description          = 'Everyday functions and utilities for PowerShell.'
@@ -24,13 +24,25 @@
 
     PrivateData          = @{
         PSData = @{
-            Tags         = @('Tools', 'PowerShell', 'Nebula', 'Utilities')
+            Tags         = @(
+                'Active Directory',
+                'AD',
+                'CSV',
+                'Nebula',
+                'Password',
+                'PowerShell',
+                'Security',
+                'Tools',
+                'Utilities'
+            )
             ProjectUri   = 'https://github.com/gioxx/Nebula.Tools'
             LicenseUri   = 'https://opensource.org/licenses/MIT'
             IconUri      = 'https://raw.githubusercontent.com/gioxx/Nebula.Tools/main/icon.png'
-            ReleaseNotes = @'
-- Added: Find-ADAccountExpirations to audit and optionally extend AD account expirations.
-- Changed: Documentation structure aligned with Nebula.Core (Modules/Security/Utilities/Active Directory).
+ReleaseNotes = @'
+- Added: Find-ADAccountExpirations now supports -ExactDate for exact expiration matches.
+- Changed: Find-ADAccountExpirations exports Department/Company only when using -ExportCsv.
+- Changed: Update-PS7 enforces TLS 1.2 on Windows PowerShell 5.1.
+- Changed: New-RandomPassword now warns when clipboard is unavailable and still returns output.
 '@
         }
     }
