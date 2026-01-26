@@ -5,38 +5,75 @@ function Find-ADAccountExpirations {
     .SYNOPSIS
         Finds Active Directory users with an account expiration date and optionally extends it.
     .DESCRIPTION
-        Searches AD for enabled users with an account expiration date.
+        Searches AD for users that have a valid account expiration value set.
+        By default, only enabled accounts are returned; use -IncludeDisabled to include disabled accounts.
         You can filter by expiration date (TargetDate) and/or by email domain (FilterDomain),
         export results to CSV, and, if requested, extend the account expiration date.
+        Output is objects by default (pipeline-friendly). Use -AsTable for formatted display.
         Use -WhatIf to simulate the extension without applying changes.
+    .OUTPUTS
+        PSCustomObject with: Name, SamAccountName, Email, AccountExpirationUTC.
+        When -AsTable is used, output is formatted for display and not ideal for further pipeline use.
     .PARAMETER TargetDate
         Reference expiration date (string) in "yyyy-MM-dd" format or any DateTime-compatible format.
-        If not specified and FilterDomain is not set, the function throws an error.
+        If provided, the function matches accounts expiring on or before this date.
+        Use -ExactDate to match only accounts expiring exactly on this date.
+        If TargetDate is not specified and FilterDomain is not set, the function throws an error.
     .PARAMETER FilterDomain
-        Filter on the user's email (e.g., "@contoso.com"). The filter is treated as a wildcard
-        and special characters are escaped.
+        Filter on the user's email (e.g., "@contoso.com" or "contoso.com").
+        The filter is treated as a wildcard and special characters are escaped.
+        Matching is done against the Mail attribute and is case-insensitive.
     .PARAMETER ExactDate
-        If present, match only accounts expiring exactly on TargetDate (same date). By default
-        TargetDate matches expirations on or before the date.
+        If present, match only accounts expiring exactly on TargetDate (same date).
+        By default TargetDate matches expirations on or before the date.
     .PARAMETER ExportCsv
-        If present, exports results to a CSV file.
+        If present, exports results to a CSV file in ExportPath (or current directory).
+        The CSV includes additional fields: Department and Company.
     .PARAMETER ExportPath
         Output folder for the CSV export. Defaults to the current location.
+        The file name is "AD_Users_Expires_<yyyy-MM-dd>.csv" or "AD_Users_Expires_ALL-DATES.csv".
+    .PARAMETER AsTable
+        If present, formats results as a table for display.
+        When used, output is no longer a clean object stream for further pipeline processing.
+    .PARAMETER IncludeDisabled
+        If present, includes disabled accounts. By default, only enabled accounts are returned.
     .PARAMETER ExtendExpiration
         If present, extends the expiration for the matched accounts to the date provided in ExtendTo.
+        The function uses ShouldProcess; use -WhatIf to preview changes safely.
     .PARAMETER ExtendTo
         New expiration date (string) to apply when using -ExtendExpiration.
+        Must be a valid DateTime-compatible format.
     .PARAMETER TargetServer
         Server/Domain Controller used for AD queries and updates.
         If omitted, the default domain controller is used.
     .EXAMPLE
         Find-ADAccountExpirations -TargetDate "2027-01-01"
+
+        Returns enabled accounts that expire on or before January 1, 2027.
     .EXAMPLE
         Find-ADAccountExpirations -FilterDomain "@contoso.com" -ExportCsv
+
+        Finds enabled accounts with email in contoso.com and exports to CSV.
+    .EXAMPLE
+        Find-ADAccountExpirations -TargetDate "2027-01-01" -ExactDate
+
+        Finds accounts expiring exactly on January 1, 2027.
+    .EXAMPLE
+        Find-ADAccountExpirations -FilterDomain "contoso.com" -IncludeDisabled -AsTable
+
+        Includes disabled accounts and formats output as a table.
     .EXAMPLE
         Find-ADAccountExpirations -TargetDate "2027-01-01" -ExtendExpiration -ExtendTo "2027-12-31" -WhatIf
+
+        Previews extending expiration to December 31, 2027 for matching accounts.
+    .EXAMPLE
+        Find-ADAccountExpirations -TargetServer "dc01.contoso.com" -FilterDomain "@contoso.com" |
+        Select-Object -ExpandProperty Name
+
+        Outputs only the Name values by keeping object output (no -AsTable).
     .NOTES
-        Requirements: ActiveDirectory module, permissions to read/modify AD users.
+        Requirements: ActiveDirectory module (RSAT), permissions to read/modify AD users.
+        Accounts with no expiration, or invalid/zero file time values are excluded.
     #>
     [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
     param(
@@ -46,6 +83,8 @@ function Find-ADAccountExpirations {
         [switch]$ExactDate,
         [switch]$ExportCsv,
         [string]$ExportPath,
+        [switch]$AsTable,
+        [switch]$IncludeDisabled,
 
         [switch]$ExtendExpiration,
         [string]$ExtendTo,
@@ -105,8 +144,9 @@ function Find-ADAccountExpirations {
         $adProperties += 'department', 'company'
     }
 
+    $adFilter = if ($IncludeDisabled) { '*' } else { 'Enabled -eq $true' }
     $adParams = @{
-        Filter     = 'Enabled -eq $true'
+        Filter     = $adFilter
         Properties = $adProperties
     }
     if (-not [string]::IsNullOrWhiteSpace($TargetServer)) {
@@ -115,10 +155,16 @@ function Find-ADAccountExpirations {
 
     $rawResults = Get-ADUser @adParams |
     Where-Object {
-        $expirationDate = ([DateTime]::FromFileTimeUtc($_.accountExpires)).Date
+        $fileTime = $_.accountExpires
+        if (-not $fileTime) { return $false }
+        if ($fileTime -eq 0 -or $fileTime -eq 9223372036854775807) { return $false }
+        try {
+            $expirationDate = ([DateTime]::FromFileTimeUtc([Int64]$fileTime)).Date
+        }
+        catch {
+            return $false
+        }
 
-        $_.accountExpires -ne 0 -and
-        $_.accountExpires -ne 9223372036854775807 -and
         (
             -not $hasTargetDate -or
             (
@@ -150,22 +196,20 @@ function Find-ADAccountExpirations {
         SamAccountName,
         DistinguishedName,
         @{ n = 'Email'; e = { $_.mail } },
-        @{ n = 'AccountExpirationUTC'; e = { [DateTime]::FromFileTimeUtc($_.accountExpires) } },
-        @{ n = 'AccountExpirationLocal'; e = { [DateTime]::FromFileTime($_.accountExpires) } }
+        @{ n = 'AccountExpirationUTC'; e = { try { [DateTime]::FromFileTimeUtc([Int64]$_.accountExpires) } catch { $null } } },
+        @{ n = 'AccountExpirationLocal'; e = { try { [DateTime]::FromFileTime([Int64]$_.accountExpires) } catch { $null } } }
 
     $results = @($results)
 
-    if ($hasTargetDate) {
-        $results |
-        Select-Object Name, SamAccountName, Email, AccountExpirationUTC |
-        Sort-Object AccountExpirationUTC |
-        Format-Table -AutoSize
+    $displayResults = $results |
+    Select-Object Name, SamAccountName, Email, AccountExpirationUTC |
+    Sort-Object AccountExpirationUTC
+
+    if ($AsTable) {
+        $displayResults | Format-Table -AutoSize
     }
     else {
-        $results |
-        Select-Object Name, SamAccountName, Email, AccountExpirationUTC |
-        Sort-Object AccountExpirationUTC |
-        Format-Table -AutoSize
+        $displayResults
     }
 
     if ($ExportCsv) {

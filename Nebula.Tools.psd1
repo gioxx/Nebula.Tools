@@ -40,7 +40,11 @@
             IconUri      = 'https://raw.githubusercontent.com/gioxx/Nebula.Tools/main/icon.png'
 ReleaseNotes = @'
 - Added: Find-ADAccountExpirations now supports -ExactDate for exact expiration matches.
+- Added: Find-ADAccountExpirations now supports -AsTable for formatted display output.
+- Added: Find-ADAccountExpirations now supports -IncludeDisabled to include disabled accounts.
 - Changed: Find-ADAccountExpirations exports Department/Company only when using -ExportCsv.
+- Changed: Find-ADAccountExpirations output is object-based by default; use -AsTable for formatting.
+- Fixed: Find-ADAccountExpirations ignores invalid/zero accountExpires values to avoid FileTime errors.
 - Changed: Update-PS7 enforces TLS 1.2 on Windows PowerShell 5.1.
 - Changed: New-RandomPassword now warns when clipboard is unavailable and still returns output.
 '@
