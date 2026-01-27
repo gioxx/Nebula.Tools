@@ -22,7 +22,7 @@ Install-Module -Name Nebula.Tools -Scope CurrentUser
 
 ## 🚀 Usage
 
-All documentation for using the module is available at **[kb.gioxx.org/docs/Nebula/Tools](https://kb.gioxx.org/docs/Nebula/Tools/intro)**.
+All documentation for using the module is available at **[kb.gioxx.org/Nebula/Tools](https://kb.gioxx.org/Nebula/Tools/intro)**.
 
 ---
 
