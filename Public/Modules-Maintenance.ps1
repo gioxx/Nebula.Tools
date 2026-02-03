@@ -266,7 +266,14 @@ function Remove-OldModuleVersions {
     # Show what's left (both inventories + disk)
     Write-Section "Remaining (inventories + disk)"
     if ($hasPSRG) {
-        $rgAfter = Get-InstalledPSResource -Name $Name -AllVersions -ErrorAction SilentlyContinue
+        $rgCmd = Get-Command Get-InstalledPSResource -ErrorAction SilentlyContinue
+        if ($rgCmd -and $rgCmd.Parameters.ContainsKey('AllVersions')) {
+            $rgAfter = Get-InstalledPSResource -Name $Name -AllVersions -ErrorAction SilentlyContinue
+        } elseif ($rgCmd -and $rgCmd.Parameters.ContainsKey('Version')) {
+            $rgAfter = Get-InstalledPSResource -Name $Name -Version '*' -ErrorAction SilentlyContinue
+        } else {
+            $rgAfter = Get-InstalledPSResource -Name $Name -ErrorAction SilentlyContinue
+        }
         Write-Information "Get-InstalledPSResource:" -InformationAction Continue
         if ($rgAfter) { $rgAfter | Format-Table Name, Version, InstalledLocation -AutoSize } else { Write-Information "(none)" -InformationAction Continue }
     }
