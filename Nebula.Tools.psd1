@@ -12,6 +12,7 @@
     FunctionsToExport    = @(
         'Find-ADAccountExpirations',
         'Find-ModulesUpdates',
+        'Join-ClipboardLines',
         'New-RandomPassword',
         'Remove-OldModuleVersions',
         'Update-CSVDelimiter',
@@ -39,15 +40,14 @@
             LicenseUri   = 'https://opensource.org/licenses/MIT'
             IconUri      = 'https://raw.githubusercontent.com/gioxx/Nebula.Tools/main/icon.png'
 ReleaseNotes = @'
-- Added: Find-ADAccountExpirations now supports -AsTable for formatted display output.
-- Added: Find-ADAccountExpirations now supports -ExactDate for exact expiration matches.
-- Added: Find-ADAccountExpirations now supports -IncludeDisabled to include disabled accounts.
-- Changed: Find-ADAccountExpirations exports Department/Company only when using -ExportCsv.
-- Changed: Find-ADAccountExpirations output is object-based by default; use -AsTable for formatting.
-- Changed: New-RandomPassword now warns when clipboard is unavailable and still returns output.
-- Changed: Update-PS7 enforces TLS 1.2 on Windows PowerShell 5.1.
-- Fixed: Find-ADAccountExpirations ignores invalid/zero accountExpires values to avoid FileTime errors.
-- Fixed: Remove-OldModuleVersions handles PSResourceGet without -AllVersions.
+- Fix: Find-ADAccountExpirations ignores invalid/zero accountExpires values to avoid FileTime errors.
+- Fix: Remove-OldModuleVersions handles PSResourceGet without -AllVersions.
+- Improve: New-RandomPassword now warns when clipboard is unavailable and still returns output.
+- Improve: Update-PS7 enforces TLS 1.2 on Windows PowerShell 5.1.
+- New: Find-ADAccountExpirations now supports -AsTable for formatted output (object-based default; Department/Company only with -ExportCsv).
+- New: Find-ADAccountExpirations now supports -ExactDate for exact expiration matches.
+- New: Find-ADAccountExpirations now supports -IncludeDisabled to include disabled accounts.
+- New: Join-ClipboardLines to join clipboard lines into a PowerShell-ready string (copies to clipboard by default; use -NoClipboard to disable).
 '@
         }
     }
