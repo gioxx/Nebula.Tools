@@ -71,6 +71,8 @@ function Find-ADAccountExpirations {
         Select-Object -ExpandProperty Name
 
         Outputs only the Name values by keeping object output (no -AsTable).
+    .LINK
+        https://kb.gioxx.org/Nebula/Tools/usage/active-directory#find-adaccountexpirations
     .NOTES
         Requirements: ActiveDirectory module (RSAT), permissions to read/modify AD users.
         Accounts with no expiration, or invalid/zero file time values are excluded.

@@ -33,6 +33,8 @@ function New-RandomPassword {
     .EXAMPLE
         New-RandomPassword -PasswordLength 15 -Count 5 -Clipboard
         Generates five complex passwords of lenght 12 and copy to clipboard
+    .LINK
+        https://kb.gioxx.org/Nebula/Tools/usage/security#new-randompassword
     .NOTES
         Author: Giovanni Solone
     

@@ -33,6 +33,8 @@ function Join-ClipboardLines {
     .EXAMPLE
         Join-ClipboardLines -ShowOutput
         Writes the joined string to the pipeline.
+    .LINK
+        https://kb.gioxx.org/Nebula/Tools/usage/utilities#join-clipboardlines
     .NOTES
         Author: Giovanni Solone
 

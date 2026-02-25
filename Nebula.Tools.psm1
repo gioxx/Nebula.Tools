@@ -2,6 +2,17 @@
 $script:ModuleRoot = $PSScriptRoot
 
 function Update-PS7 {
+    <#
+    .SYNOPSIS
+        Updates PowerShell 7 using the official installer script.
+    .DESCRIPTION
+        Downloads and executes the Microsoft install script to update PowerShell 7 with MSI.
+        On Windows PowerShell 5.1 it enforces TLS 1.2 before download.
+    .EXAMPLE
+        Update-PS7
+    .LINK
+        https://kb.gioxx.org/Nebula/Tools/usage/utilities#update-ps7
+    #>
     # Ensure TLS 1.2 for Windows PowerShell 5.1 environments
     try {
         if ($PSVersionTable.PSEdition -eq 'Desktop') {

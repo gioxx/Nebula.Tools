@@ -9,7 +9,7 @@ function Update-CSVDelimiter {
     .PARAMETER FilePath
         The path to the CSV file that you want to update.
     .PARAMETER Encoding
-        The encoding of the CSV file. Default is "ISO-8859-1".
+        The encoding of the CSV file. Default is "ISO-8859-15".
     .PARAMETER ToComma
         A switch to convert the delimiter from semicolon (;) to comma (,).
     .PARAMETER ToSemicolon
@@ -17,6 +17,8 @@ function Update-CSVDelimiter {
     .EXAMPLE
         Update-CSVDelimiter -FilePath "path\to\file.csv" -ToComma
         Update-CSVDelimiter -FilePath "path\to\file.csv" -ToSemicolon
+    .LINK
+        https://kb.gioxx.org/Nebula/Tools/usage/utilities#update-csvdelimiter
     .NOTES
         Author: Giovanni Solone
     

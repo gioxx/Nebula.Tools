@@ -18,6 +18,8 @@ function Find-ModulesUpdates {
         Consider pre-release versions.
     .EXAMPLE
         Find-ModulesUpdates -Scope User -Provider PSResourceGet
+    .LINK
+        https://kb.gioxx.org/Nebula/Tools/usage/modules#find-modulesupdates
     #>
     [CmdletBinding()]
     param(
@@ -125,6 +127,8 @@ function Remove-OldModuleVersions {
         Remove-OldModuleVersions -Name 'PSAppDeployToolkit'
     .EXAMPLE
         Remove-OldModuleVersions -Name 'MicrosoftPlaces' -Keep 2 -WhatIf
+    .LINK
+        https://kb.gioxx.org/Nebula/Tools/usage/modules#remove-oldmoduleversions
     .NOTES
         - Running in an elevated session may be required to remove versions under Program Files/ProgramData.
         - This function does not install anything; it only removes older versions.
@@ -312,6 +316,8 @@ function Update-Modules {
         Show the plan and make no changes.
     .EXAMPLE
         Update-Modules -Scope User -Provider PSResourceGet -Preview
+    .LINK
+        https://kb.gioxx.org/Nebula/Tools/usage/modules#update-modules
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]
