@@ -7,9 +7,11 @@ function Update-PS7 {
         Updates PowerShell 7 using the official installer script.
     .DESCRIPTION
         Resolves the latest PowerShell release from the GitHub Releases API (the aka.ms
-        install-powershell.ps1 buildinfo endpoint can lag behind actual GitHub releases) and
-        pins that version when invoking the Microsoft install script with -UseMSI. Skips the
-        install entirely, with a warning, when the running version already matches the latest.
+        install-powershell.ps1 buildinfo endpoint can lag behind actual GitHub releases) to
+        decide whether an update is needed, then invokes the Microsoft install script with
+        -UseMSI (which always installs the latest stable release; it has no -Version switch).
+        Skips the install entirely, with a warning, when the running version already matches
+        the latest.
         On Windows PowerShell 5.1 it enforces TLS 1.2 before download.
     .PARAMETER Force
         Runs the installer even if the installed version already matches the latest release.
@@ -45,12 +47,9 @@ function Update-PS7 {
         return
     }
 
-    $installArgs = '-UseMSI'
-    if ($latestVersion) {
-        $installArgs += " -Version $latestVersion"
-    }
-
-    Invoke-Expression "& { $(Invoke-RestMethod https://aka.ms/install-powershell.ps1) } $installArgs"
+    # install-powershell.ps1 no longer accepts -Version; it always installs the
+    # latest stable release unless -Preview/-Daily is passed.
+    Invoke-Expression "& { $(Invoke-RestMethod https://aka.ms/install-powershell.ps1) } -UseMSI"
 }
 
 # --- Load Private helpers first (NOT exported) ---
