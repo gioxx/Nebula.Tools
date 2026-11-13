@@ -1,6 +1,6 @@
 @{
     RootModule           = 'Nebula.Tools.psm1'
-    ModuleVersion        = '1.0.7'
+    ModuleVersion        = '1.0.8'
     GUID                 = 'd6f6c63d-e8db-4f0c-b7f6-4b0a95f7a63e'
     Author               = 'Giovanni Solone'
     Description          = 'Everyday functions and utilities for PowerShell.'
@@ -40,7 +40,8 @@
             LicenseUri   = 'https://opensource.org/licenses/MIT'
             IconUri      = 'https://raw.githubusercontent.com/gioxx/Nebula.Tools/main/icon.png'
 ReleaseNotes = @'
-- Fix: Update-PS7 no longer passes -Version to install-powershell.ps1, since Microsoft removed that parameter from the upstream script; the installer always fetches the latest stable release.
+- Fix: Update-PS7 no longer reinstalls the same version on every run. It now compares against the release install-powershell.ps1 actually installs with -UseMSI (ReleaseTag in PowerShell's metadata.json, the latest LTS 7.6.x), instead of the GitHub "latest" release (7.7+), which ships no MSI.
+- Update-PS7 warns when a newer stable release exists without an MSI package.
 '@
         }
     }

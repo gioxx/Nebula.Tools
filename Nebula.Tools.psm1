@@ -6,12 +6,12 @@ function Update-PS7 {
     .SYNOPSIS
         Updates PowerShell 7 using the official installer script.
     .DESCRIPTION
-        Resolves the latest PowerShell release from the GitHub Releases API (the aka.ms
-        install-powershell.ps1 buildinfo endpoint can lag behind actual GitHub releases) to
-        decide whether an update is needed, then invokes the Microsoft install script with
-        -UseMSI (which always installs the latest stable release; it has no -Version switch).
-        Skips the install entirely, with a warning, when the running version already matches
-        the latest.
+        Invokes the Microsoft install script with -UseMSI. With -UseMSI the script installs
+        the release named by ReleaseTag in PowerShell's tools/metadata.json (the latest LTS
+        7.6.x, since PowerShell 7.7+ ships no MSI packages), so Update-PS7 reads the same
+        metadata to decide whether an update is needed. Skips the install entirely, with a
+        warning, when the running version already matches that release, and points out when
+        a newer non-MSI stable release exists.
         On Windows PowerShell 5.1 it enforces TLS 1.2 before download.
     .PARAMETER Force
         Runs the installer even if the installed version already matches the latest release.
@@ -34,21 +34,26 @@ function Update-PS7 {
 
     $currentVersion = $PSVersionTable.PSVersion
 
+    # Same metadata install-powershell.ps1 reads: with -UseMSI it installs ReleaseTag (LTS),
+    # not StableReleaseTag, because 7.7+ has no MSI. Comparing against GitHub "latest"
+    # made every run reinstall the same LTS build.
     $latestVersion = $null
     try {
-        $release = Invoke-RestMethod -Uri 'https://api.github.com/repos/PowerShell/PowerShell/releases/latest' -Headers @{ 'User-Agent' = 'Nebula.Tools' } -ErrorAction Stop
-        $latestVersion = [version]($release.tag_name -replace '^v', '')
+        $metadata = Invoke-RestMethod -Uri 'https://raw.githubusercontent.com/PowerShell/PowerShell/master/tools/metadata.json' -ErrorAction Stop
+        $latestVersion = [version]($metadata.ReleaseTag -replace '^v' -replace '-.*$')
+        $stableVersion = [version]($metadata.StableReleaseTag -replace '^v' -replace '-.*$')
+        if ($stableVersion -gt $latestVersion -and $currentVersion -lt $stableVersion) {
+            Write-Warning "PowerShell $stableVersion is available but has no MSI package; Update-PS7 tracks the latest MSI release ($latestVersion). Install $stableVersion manually (zip/winget/Store) if you need it."
+        }
     } catch {
-        Write-Warning "Unable to query GitHub for the latest PowerShell release, falling back to the Microsoft installer's own version resolution. $($_.Exception.Message)"
+        Write-Warning "Unable to read PowerShell release metadata, falling back to the Microsoft installer's own version resolution. $($_.Exception.Message)"
     }
 
     if ($latestVersion -and -not $Force.IsPresent -and $currentVersion -ge $latestVersion) {
-        Write-Warning "PowerShell is already up to date (installed: $currentVersion, latest: $latestVersion). Skipping install. Use -Force to reinstall anyway."
+        Write-Warning "PowerShell is already up to date (installed: $currentVersion, latest MSI release: $latestVersion). Skipping install. Use -Force to reinstall anyway."
         return
     }
 
-    # install-powershell.ps1 no longer accepts -Version; it always installs the
-    # latest stable release unless -Preview/-Daily is passed.
     Invoke-Expression "& { $(Invoke-RestMethod https://aka.ms/install-powershell.ps1) } -UseMSI"
 }
 
